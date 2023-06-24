@@ -13,6 +13,7 @@ const font = Figtree({ subsets: ["latin"] });
 export const metadata = {
   title: "Songify - Peter Estephan",
   description: "Listen to music!",
+  favicon: "/favicon.png",
 };
 
 export const revalidate = 0;
