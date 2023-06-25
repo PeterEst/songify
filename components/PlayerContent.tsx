@@ -5,6 +5,7 @@ import LikeButton from "./LikeButton";
 import { BsPauseFill, BsPlayFill } from "react-icons/bs";
 import { AiFillStepBackward, AiFillStepForward } from "react-icons/ai";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
+import { PuffLoader } from "react-spinners";
 import Slider from "./Slider";
 import usePlayer from "@/hooks/usePlayer";
 import useSound from "use-sound";
@@ -18,6 +19,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
   const player = usePlayer();
   const [volume, setVolume] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
   const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
@@ -63,6 +65,9 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
     },
     onpause: () => {
       setIsPlaying(false);
+    },
+    onload: () => {
+      setIsLoaded(true);
     },
     format: ["mp3"],
   });
@@ -127,12 +132,16 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
         items-center
       "
       >
-        <div
-          onClick={handlePlay}
-          className="h-10 w-10 flex items-center justify-center rounded-full bg-white p-1 cursor-pointer"
-        >
-          <Icon size={30} className="text-black" />
-        </div>
+        {isLoaded ? (
+          <div
+            onClick={handlePlay}
+            className="h-10 w-10 flex items-center justify-center rounded-full bg-white p-1 cursor-pointer"
+          >
+            <Icon size={30} className="text-black" />
+          </div>
+        ) : (
+          <PuffLoader size={30} color="#fff" />
+        )}
       </div>
 
       <div
@@ -152,9 +161,10 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
           size={30}
           className="text-neutral-400 cursor-pointer hover:text-white transition"
         />
-        <div
-          onClick={handlePlay}
-          className="
+        {isLoaded ? (
+          <div
+            onClick={handlePlay}
+            className="
                 flex
                 items-center
                 justify-center
@@ -165,9 +175,12 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
                 p-1
                 cursor-pointer
             "
-        >
-          <Icon size={30} className="text-black" />
-        </div>
+          >
+            <Icon size={30} className="text-black" />
+          </div>
+        ) : (
+          <PuffLoader size={30} color="#fff" />
+        )}
         <AiFillStepForward
           onClick={onPlayNext}
           size={30}
