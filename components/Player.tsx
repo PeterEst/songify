@@ -5,12 +5,14 @@ import useLoadSongUrl from "@/hooks/useLoadSongUrl";
 import usePlayer from "@/hooks/usePlayer";
 import React from "react";
 import PlayerContent from "./PlayerContent";
+import useLoadSongLrc from "@/hooks/useLoadSongLrc";
 
 const Player = () => {
   const player = usePlayer();
   const { song } = useGetSongById(player.activeId);
 
   const songUrl = useLoadSongUrl(song!);
+  const songLrc = useLoadSongLrc(song!);
 
   if (!song || !songUrl || !player.activeId) {
     return null;
