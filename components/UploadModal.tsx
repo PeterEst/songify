@@ -30,6 +30,7 @@ const UploadModal = () => {
       title: "",
       song: null,
       image: null,
+      lrc: null,
     },
   });
 
@@ -46,6 +47,7 @@ const UploadModal = () => {
 
       const imageFile = values.image?.[0];
       const songFile = values.song?.[0];
+      const lrcFile = values.lrc?.[0];
       const songTitle = values.title;
       const songAuthor = values.author;
 
@@ -82,6 +84,24 @@ const UploadModal = () => {
         return toast.error("Failed to upload image.");
       }
 
+      // Upload LRC
+      let lrcData;
+      if (lrcFile) {
+        const { data, error: lrcError } = await supabaseClient.storage
+          .from("lyrics")
+          .upload(`lyrics-${values.title}-${uniqueId}`, lrcFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (lrcError) {
+          setIsLoading(false);
+          return toast.error("Failed to upload lrc.");
+        }
+
+        lrcData = data;
+      }
+
       const { error: supabaseError } = await supabaseClient
         .from("songs")
         .insert({
@@ -90,6 +110,7 @@ const UploadModal = () => {
           author: values.author,
           image_path: imageData?.path,
           song_path: songData?.path,
+          lrc_path: lrcFile ? lrcData?.path : null,
         });
 
       if (supabaseError) {
@@ -103,6 +124,7 @@ const UploadModal = () => {
       reset();
       uploadModal.onClose();
     } catch (error) {
+      console.error(error);
       toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
@@ -170,6 +192,21 @@ const UploadModal = () => {
           />
           {errors.image && (
             <div className="text-red-500">Image is required</div>
+          )}
+        </div>
+        <div>
+          <div className="pb-1">Select an LRC File (lyrics)</div>
+          <Input
+            id="lrc"
+            type="file"
+            disabled={isLoading}
+            accept=".lrc"
+            {...register("lrc")}
+          />
+          {errors.lrc && (
+            <div className="text-red-500">
+              LRC file must be a .lrc or .txt file
+            </div>
           )}
         </div>
         <Button disabled={isLoading} type="submit">
