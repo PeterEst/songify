@@ -1,5 +1,5 @@
 import { Song } from "@/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import MediaItem from "./MediaItem";
 import LikeButton from "./LikeButton";
 import { BsPauseFill, BsPlayFill } from "react-icons/bs";
@@ -9,21 +9,30 @@ import { PuffLoader } from "react-spinners";
 import Slider from "./Slider";
 import usePlayer from "@/hooks/usePlayer";
 import useSound from "use-sound";
+import LrcButton from "./LrcButton";
+import useTimer from "@/hooks/useTimer";
 
 interface PlayerContentProps {
   song: Song;
   songUrl: string;
+  songLrcUrl: string;
 }
 
-const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
+const PlayerContent: React.FC<PlayerContentProps> = ({
+  song,
+  songUrl,
+  songLrcUrl,
+}) => {
   const player = usePlayer();
   const [volume, setVolume] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [songLrc, setSongLrc] = useState<string>("");
 
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
   const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
 
+  // Play Next Song
   const onPlayNext = () => {
     if (player.ids.length === 0) {
       return;
@@ -39,6 +48,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
     player.setId(nextSong);
   };
 
+  // Previous Song
   const onPlayPrevious = () => {
     if (player.ids.length === 0) {
       return;
@@ -54,24 +64,40 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
     player.setId(previousSong);
   };
 
-  const [play, { pause, sound }] = useSound(songUrl, {
+  // Timer Handler
+  const {
+    currentMillisecond,
+    setCurrentMillisecond,
+    reset: resetTimer,
+    play: playTimer,
+    pause: pauseTimer,
+  } = useTimer();
+
+  // Song Handler
+  const [play, { pause, sound, duration }] = useSound(songUrl, {
     volume: volume,
     onplay: () => {
       setIsPlaying(true);
+      playTimer();
     },
     onend: () => {
       setIsPlaying(false);
-      onPlayNext();
+      resetTimer();
+      pauseTimer();
     },
     onpause: () => {
       setIsPlaying(false);
+      pauseTimer();
     },
     onload: () => {
       setIsLoaded(true);
+      setCurrentMillisecond(0);
+      playTimer();
     },
     format: ["mp3"],
   });
 
+  // Unload / Load Song
   useEffect(() => {
     sound?.play();
 
@@ -80,6 +106,20 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
     };
   }, [sound]);
 
+  // Load Lrc
+  useEffect(() => {
+    if (!songLrcUrl) {
+      return;
+    }
+
+    fetch(songLrcUrl)
+      .then((res) => res.text())
+      .then((res) => {
+        setSongLrc(res);
+      });
+  }, [songLrcUrl]);
+
+  // Handle Play/Pause
   const handlePlay = () => {
     if (!isPlaying) {
       play();
@@ -88,6 +128,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
     }
   };
 
+  // Handle Mute
   const toggleMute = () => {
     if (volume === 0) {
       setVolume(1);
@@ -120,6 +161,9 @@ const PlayerContent: React.FC<PlayerContentProps> = ({ song, songUrl }) => {
         >
           <MediaItem data={song} />
           <LikeButton songId={song.id} />
+          {songLrcUrl && (
+            <LrcButton songLrc={songLrc} currentSecond={currentMillisecond} />
+          )}
         </div>
       </div>
       <div
