@@ -51,6 +51,7 @@ const MediaItem: React.FC<MediaItemProps> = ({ data, onClick }) => {
           src={imageUrl || "/images/liked.png"}
           alt="Media Item"
           className="object-cover"
+          priority
         />
       </div>
       <div
