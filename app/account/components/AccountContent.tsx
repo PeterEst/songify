@@ -29,7 +29,9 @@ const AccountContent = () => {
         url: "/api/create-portal-link",
       });
 
-      window.location.assign(url);
+      if (url) {
+        window.open(url, "_blank");
+      }
     } catch (error) {
       if (error) {
         toast.error((error as Error).message);
