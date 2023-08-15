@@ -11,13 +11,14 @@ const useOnPlay = (songs: Song[]) => {
   const { user, subscription } = useUser();
 
   const onPlay = (id: string) => {
-    if (!user) {
-      return authModal.onOpen();
-    }
+    // Removed for demo purposes
+    // if (!user) {
+    //   return authModal.onOpen();
+    // }
 
-    if (!subscription) {
-      return subscriptionModal.onOpen();
-    }
+    // if (!subscription) {
+    //   return subscriptionModal.onOpen();
+    // }
 
     player.setId(id);
     player.setIds(songs.map((song) => song.id));
